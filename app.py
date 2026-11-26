@@ -44,6 +44,12 @@ def load_data():
         )
         st.stop()
 
+    # Ensure driver uses psycopg2 (matches psycopg2-binary in requirements)
+    if database_url.startswith("postgresql://"):
+        database_url = database_url.replace("postgresql://", "postgresql+psycopg2://", 1)
+    elif database_url.startswith("postgresql+psycopg://"):
+        database_url = database_url.replace("postgresql+psycopg://", "postgresql+psycopg2://", 1)
+
     # Add SSL mode only if missing
     if "sslmode=" not in database_url:
         separator = "&" if "?" in database_url else "?"
