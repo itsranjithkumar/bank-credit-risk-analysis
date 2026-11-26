@@ -1,8 +1,16 @@
 
+import os
+from pathlib import Path
+from dotenv import load_dotenv
+
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-from sqlalchemy import create_engine, URL, text
+from sqlalchemy import create_engine, text
+
+# Load environment variables from project root
+BASE_DIR = Path(__file__).resolve().parent
+load_dotenv(BASE_DIR / ".env")
 
 st.set_page_config(
     page_title="Bank Credit Risk Analytics",
@@ -15,33 +23,52 @@ st.caption("Business Analytics Dashboard | German Credit Dataset")
 
 @st.cache_data(ttl=60)
 def load_data():
-    import os
-    import getpass
+    # Try to read DATABASE_URL from Streamlit secrets safely
+    database_url = None
+    try:
+        database_url = st.secrets.get("DATABASE_URL")
+    except Exception:
+        # secrets.toml not available or st.secrets not initialized
+        pass
 
-    password = os.getenv("DB_PASSWORD")
-    if not password:
-        password = getpass.getpass(
-            "Enter PostgreSQL analyst password: "
+    # Fall back to environment variables
+    if not database_url:
+        database_url = os.getenv("DATABASE_URL")
+
+    # If neither source contains DATABASE_URL, show error
+    if not database_url:
+        st.error("DATABASE_URL not found")
+        st.info(
+            "Please set DATABASE_URL in your .env file or "
+            "in Streamlit secrets (secrets.toml)."
         )
+        st.stop()
 
-    db_url = URL.create(
-        drivername="postgresql+psycopg2",
-        username="analyst",
-        password=password,
-        host="localhost",
-        port=5432,
-        database="bank_credit_risk_analysis"
+    # Add SSL mode only if missing
+    if "sslmode=" not in database_url:
+        separator = "&" if "?" in database_url else "?"
+        database_url += f"{separator}sslmode=require"
+
+    # Create SQLAlchemy engine with SSL
+    engine = create_engine(
+        database_url,
+        pool_pre_ping=True,
+        connect_args={"sslmode": "require"}
     )
 
-    engine = create_engine(db_url)
+    try:
+        with engine.connect() as connection:
+            df = pd.read_sql(
+                text("SELECT * FROM credit_risk_analysis"),
+                connection
+            )
+    except Exception as e:
+        st.error("Database Connection Failed")
+        st.info(f"Failed to connect to Neon PostgreSQL: {e}")
+        st.stop()
+    finally:
+        engine.dispose()
 
-    with engine.connect() as connection:
-        df = pd.read_sql(
-            text("SELECT * FROM credit_risk_analysis"),
-            connection
-        )
-
-    engine.dispose()
     return df
 
 
@@ -198,9 +225,17 @@ try:
         "not observed future loan defaults."
     )
 
-except Exception as e:
-    st.error(f"Dashboard could not load: {e}")
+except ConnectionError as e:
+    st.error("Database Connection Failed")
+    st.info(f"{e}")
     st.info(
-        "Check that PostgreSQL is running and the database "
-        "contains the credit_risk_analysis table."
+        "Please ensure DATABASE_URL is set in Streamlit secrets "
+        "or in your .env file and Neon PostgreSQL is accessible."
+    )
+except Exception as e:
+    st.error("Dashboard could not load")
+    st.info(f"Error: {e}")
+    st.info(
+        "Please check that the database contains the "
+        "credit_risk_analysis table with data."
     )

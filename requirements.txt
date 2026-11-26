@@ -6,3 +6,4 @@ ucimlrepo
 streamlit
 plotly
 matplotlib
+python-dotenv
