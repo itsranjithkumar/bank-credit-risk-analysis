@@ -1,0 +1,28 @@
+
+CREATE TABLE IF NOT EXISTS credit_risk_analysis (
+    id BIGSERIAL PRIMARY KEY,
+    checking_account VARCHAR(30),
+    loan_duration_months INTEGER,
+    credit_history VARCHAR(50),
+    loan_purpose VARCHAR(50),
+    credit_amount NUMERIC(12,2),
+    savings_account VARCHAR(50),
+    employment_since VARCHAR(50),
+    installment_rate INTEGER,
+    personal_status_sex VARCHAR(50),
+    other_debtors VARCHAR(50),
+    residence_since INTEGER,
+    property VARCHAR(50),
+    age INTEGER,
+    other_installment_plans VARCHAR(50),
+    housing VARCHAR(50),
+    existing_credits INTEGER,
+    job VARCHAR(50),
+    people_liable INTEGER,
+    telephone VARCHAR(50),
+    foreign_worker VARCHAR(50),
+    credit_class INTEGER,
+    risk_status VARCHAR(10),
+    age_group VARCHAR(20),
+    loan_amount_band VARCHAR(20)
+);

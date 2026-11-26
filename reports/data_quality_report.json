@@ -1,0 +1,11 @@
+{
+    "original_rows": 1000,
+    "final_rows": 1000,
+    "duplicate_rows_removed": 0,
+    "missing_values_after_cleaning": 0,
+    "columns": 24,
+    "good_credit_records": 700,
+    "bad_credit_records": 300,
+    "average_credit_amount": 3271.26,
+    "average_customer_age": 35.55
+}
