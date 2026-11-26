@@ -55,3 +55,9 @@ The Good/Bad labels represent recorded dataset classifications, not observed fut
 4. Run:
 
    `streamlit run app.py`
+
+
+
+
+
+   deploy link - https://bank-credit-risk-analysis-qptr6dnkdzwvrjs9lu8nzh.streamlit.app/
